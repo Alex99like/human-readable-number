@@ -1,6 +1,26 @@
-module.exports = function toReadable (number) {
-    let arr = String(number).split('');
-    const numbers = {
+const radix = 10;
+
+function getDigitArray(number, numberLength) {
+    let digitArray = [];
+    let i = 0;
+    let tempNumber = 0;
+    while (number >= radix) {
+        tempNumber += Math.floor(number % radix) * (radix ** i);
+        if(++i == numberLength){
+            digitArray.push(tempNumber);
+            tempNumber = 0;
+            i = 0;
+        }
+        number /= radix;
+    }
+    tempNumber += Math.floor(number % radix) * (radix ** i);
+    digitArray.push(tempNumber);
+    return digitArray;
+}
+
+function hundredsToText(number){
+    let humanReadable = "";
+    let firstForm = {
         0: "zero",
         1: "one",
         2: "two",
@@ -10,40 +30,56 @@ module.exports = function toReadable (number) {
         6: "six",
         7: "seven",
         8: "eight",
-        9: "nine",
-        10: "ten",
-        11: "eleven",
-        12: "twelve",
-        13: "thirteen",
-        14: "fourteen",
-        15: "fifteen",
-        16: "sixteen",
-        17: "seventeen",
-        18: "eighteen",
-        19: "nineteen",
-        20: "twenty",
-        30: "thirty",
-        40: "forty",
-        50: "fifty",
-        60: "sixty",
-        70: "seventy",
-        80: "eighty",
-        90: "ninety",
-        100: "hundred",
+        9: "nine"
     };
-
-    if (number <= 20) {
-      return numbers[number];
+    if (number < 9)
+        return humanReadable += firstForm[number];
+    let secondForm = {
+        2: "twen",
+        3: "thir",
+        4: "for",
+        5: "fif",
+        6: "six",
+        7: "seven",
+        8: "eigh",
+        9: "nine"
+    };
+    let digitArray = getDigitArray(number, 1);
+    for (let i = digitArray.length - 1; i >= 0; i--) {        
+        if (i == 0 && digitArray[i] != 0){
+            humanReadable += " " + firstForm[digitArray[i]];
+        }
+        else if(digitArray[i] == 0) continue;
+        else if(i>1) {
+            humanReadable += " " + firstForm[digitArray[i]] + " hundred";
+        }
+        else if (i == 1) {
+            if (digitArray[i] == 1) {
+                if (digitArray[i - 1] == 0) {
+                    humanReadable += " ten";
+                    i--;
+                }
+                else if (digitArray[i - 1] == 1) {
+                    humanReadable += " eleven";
+                    i--;
+                }
+                else if (digitArray[i - 1] == 2) {
+                    humanReadable += " twelve";
+                    i--;
+                }
+                else if (digitArray[i - 1] == 4) {
+                    humanReadable += " " + firstForm[digitArray[i - 1]] + "teen";
+                    i--;
+                }
+                else {
+                    humanReadable += " " + secondForm[digitArray[i - 1]] + "teen";
+                    i--;
+                }
+            }
+            else {
+                humanReadable += " " + secondForm[digitArray[i]] + "ty";
+            }
+        }
     }
-
-    if (number >= 20 && number < 100) {
-       let num = Number(arr[0]) * 10;
-       return numbers[num] + ' ' + numbers[Number(arr[1])]
-    }
-
-    if (number > 100 && number < 1000) {
-        let num = Number(arr[1]) * 10;
-        return numbers[Number(arr[0])] + ' ' + numbers[100] + ' ' + numbers[Number(arr[1])] + ' '  + numbers[Number(arr[2])]
-     }
-  }
-  
+    return humanReadable.trim();
+}
