@@ -1,85 +1,65 @@
-const radix = 10;
-
-function getDigitArray(number, numberLength) {
-    let digitArray = [];
-    let i = 0;
-    let tempNumber = 0;
-    while (number >= radix) {
-        tempNumber += Math.floor(number % radix) * (radix ** i);
-        if(++i == numberLength){
-            digitArray.push(tempNumber);
-            tempNumber = 0;
-            i = 0;
-        }
-        number /= radix;
+module.exports = function toReadable (number) {
+    const words  = {
+      hundred: {
+          100: "one hundred ",
+          200: "two hundred ",
+          300: "three hundred ",
+          400: "four hundred ",
+          500: "five hundred ",
+          600: "six hundred ",
+          700: "seven hundred ",
+          800: "eight hundred ",
+          900: "nine hundred "
+      },
+      dec: {
+          10: "ten ",
+          20: "twenty ",
+          30: "thirty ",
+          40: "forty ",
+          50: "fifty ",
+          60: "sixty ",
+          70: "seventy ",
+          80: "eighty ",
+          90: "ninety "
+      },
+      unit: {
+          1: "one",
+          2: "two",
+          3: "three",
+          4: "four",
+          5: "five",
+          6: "six",
+          7: "seven",
+          8: "eight",
+          9: "nine"
+      },
+      tenths: {
+          11: "eleven",
+          12: "twelve",
+          13: "thirteen",
+          14: "fourteen",
+          15: "fifteen",
+          16: "sixteen",
+          17: "seventeen",
+          18: "eighteen",
+          19: "nineteen"
+      }
     }
-    tempNumber += Math.floor(number % radix) * (radix ** i);
-    digitArray.push(tempNumber);
-    return digitArray;
-}
-
-function hundredsToText(number){
-    let humanReadable = "";
-    let firstForm = {
-        0: "zero",
-        1: "one",
-        2: "two",
-        3: "three",
-        4: "four",
-        5: "five",
-        6: "six",
-        7: "seven",
-        8: "eight",
-        9: "nine"
-    };
-    if (number < 9)
-        return humanReadable += firstForm[number];
-    let secondForm = {
-        2: "twen",
-        3: "thir",
-        4: "for",
-        5: "fif",
-        6: "six",
-        7: "seven",
-        8: "eigh",
-        9: "nine"
-    };
-    let digitArray = getDigitArray(number, 1);
-    for (let i = digitArray.length - 1; i >= 0; i--) {        
-        if (i == 0 && digitArray[i] != 0){
-            humanReadable += " " + firstForm[digitArray[i]];
-        }
-        else if(digitArray[i] == 0) continue;
-        else if(i>1) {
-            humanReadable += " " + firstForm[digitArray[i]] + " hundred";
-        }
-        else if (i == 1) {
-            if (digitArray[i] == 1) {
-                if (digitArray[i - 1] == 0) {
-                    humanReadable += " ten";
-                    i--;
-                }
-                else if (digitArray[i - 1] == 1) {
-                    humanReadable += " eleven";
-                    i--;
-                }
-                else if (digitArray[i - 1] == 2) {
-                    humanReadable += " twelve";
-                    i--;
-                }
-                else if (digitArray[i - 1] == 4) {
-                    humanReadable += " " + firstForm[digitArray[i - 1]] + "teen";
-                    i--;
-                }
-                else {
-                    humanReadable += " " + secondForm[digitArray[i - 1]] + "teen";
-                    i--;
-                }
-            }
-            else {
-                humanReadable += " " + secondForm[digitArray[i]] + "ty";
-            }
-        }
+  
+    let unitNum = number % 10;
+    let tenthNum = number % 100;
+    let decNum = 0;
+  
+    if(tenthNum > 10 && tenthNum < 20) {
+      decNum = tenthNum;
+      unitNum = '';
+    } else {
+      decNum = (number - unitNum) % 100;
     }
-    return humanReadable.trim();
-}
+  
+    let hundredNum = number - decNum - unitNum;
+  
+    if(number == 0) return "zero";
+  
+    return `${words.hundred[hundredNum] || ''}${((decNum > 10 && decNum < 20) ? words.tenths[decNum] : words.dec[decNum]) || ''}${words.unit[unitNum] || ''}`.trim()
+  }   
